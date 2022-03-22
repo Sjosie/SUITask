@@ -43,19 +43,30 @@ extension RepositoryViewModel {
     func getRepositories(_ searchText: String) {
         RepositoryAPI.requestRepos(searchText)
             .mapError({ (error) -> Error in
+                print("HADS -> \(error)")
                 return error
             }).sink(receiveCompletion: { result in
-
+                switch result {
+                    
+                case .finished:
+                    print("finished")
+                case .failure(let error):
+                    print("error -> \(error)")
+                }
             }, receiveValue: {
                 
-                self.repositoriesCount.removeAll()
-                self.repositories.removeAll()
-                self.viewState = .empty
-                
-                self.repositories = $0.items ?? []
-                
-                self.repositories.prefix(10).forEach { repo in
-                    self.getRepositoriesCount(repo.owner?.url ?? "")
+                if $0.items != nil {
+                    self.repositoriesCount.removeAll()
+                    self.repositories.removeAll()
+                    self.viewState = .loadedRepos
+                    
+                    self.repositories = $0.items ?? []
+                    
+                    self.repositories.prefix(10).forEach { repo in
+                        self.getRepositoriesCount(repo.owner?.url ?? "")
+                    }
+                } else {
+                    self.viewState = .empty
                 }
                 
             }).store(in: &subsciptions)
@@ -80,5 +91,5 @@ extension RepositoryViewModel {
 }
 
 enum RepositoriesViewState {
-    case empty, populated
+    case empty, populated, loadedRepos
 }

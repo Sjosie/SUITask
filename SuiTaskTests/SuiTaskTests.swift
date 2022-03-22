@@ -30,18 +30,18 @@ class SuiTaskTests: XCTestCase {
     func testExistingResult() {
         
         let repositoriesToTest = RepositoriesResponse(items: [Repository.example])
-        let expectation = XCTestExpectation(description: "State is set to populated")
+        let expectation = XCTestExpectation(description: "State is set to loaded")
         
         viewModelToTest.$viewState.dropFirst().sink { state in
             // because that's not enought for displaying data (enought is having the same repos count for the results)
-            XCTAssertEqual(state, .empty)
+            XCTAssertEqual(state, .loadedRepos)
             expectation.fulfill()
         }.store(in: &cancellables)
 
         mockApiClient.fetchReposResults = Result.success(repositoriesToTest).publisher.eraseToAnyPublisher()
-        viewModelToTest.getRepositories("")
+        viewModelToTest.getRepositories("q")
 
-        wait(for: [expectation], timeout: 1)
+        wait(for: [expectation], timeout: 5)
         
     }
     
