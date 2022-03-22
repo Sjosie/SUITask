@@ -14,7 +14,7 @@ class RepositoryViewModel: ObservableObject {
     @Published private(set) var repositoriesCount = [Int]()
     
     @Published var searchText = ""
-    @Published var isLoading = true
+    @Published var viewState: RepositoriesViewState = .empty
     
     var subsciptions = Set<AnyCancellable>()
     
@@ -45,12 +45,12 @@ extension RepositoryViewModel {
             .mapError({ (error) -> Error in
                 return error
             }).sink(receiveCompletion: { result in
-                
+
             }, receiveValue: {
                 
                 self.repositoriesCount.removeAll()
                 self.repositories.removeAll()
-                self.isLoading = true
+                self.viewState = .empty
                 
                 self.repositories = $0.items ?? []
                 
@@ -72,9 +72,13 @@ extension RepositoryViewModel {
                 self.repositoriesCount.insert((value.public_repos ?? 0), at: 0)
                 
                 if self.repositoriesCount.count == self.repositories.prefix(10).count {
-                    self.isLoading = false
+                    self.viewState = .populated
                 }
                 
             }).store(in: &subsciptions)
     }
+}
+
+enum RepositoriesViewState {
+    case empty, populated
 }

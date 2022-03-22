@@ -15,17 +15,17 @@ struct RepositoryView: View {
         NavigationView {
             VStack {
                 SearchField(text: $viewModel.searchText)
-                if viewModel.isLoading == false {
+                switch viewModel.viewState {
+                case .populated:
                     List(Array(viewModel.repositories.prefix(10).enumerated()), id: \.offset) { index, item in
                         NavigationLink(destination: RepositoryDetailsView(repository: item)) {
                             RepositoryCell(repository: item, repositoryCount: viewModel.repositoriesCount[index])
                         }
                     }
-                } else {
+                default:
                     Text("Please input some text ...")
                     Spacer()
                 }
-                
             }
             .navigationBarTitle("Github Repositories", displayMode: .inline)
         }
